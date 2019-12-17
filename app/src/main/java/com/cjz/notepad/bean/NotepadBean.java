@@ -6,6 +6,8 @@ public class NotepadBean {
     private String notepadContent;
     private String notepadTime;
 
+    public boolean isCheck;
+
     public String getId() {
         return id;
     }

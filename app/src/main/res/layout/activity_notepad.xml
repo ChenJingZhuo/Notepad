@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/notebook"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#fefefe">
@@ -67,6 +68,53 @@
                 android:layout_below="@+id/note_name"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
+
+            <LinearLayout
+                android:id="@+id/tools_bar"
+                android:visibility="gone"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/all_select"
+                    android:layout_margin="5dp"
+                    android:text="全选"
+                    android:textStyle="bold"
+                    android:background="@color/orange"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/all_not_select"
+                    android:layout_margin="5dp"
+                    android:text="全不选"
+                    android:textStyle="bold"
+                    android:background="@color/orange"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/back_select"
+                    android:layout_margin="5dp"
+                    android:text="反选"
+                    android:textStyle="bold"
+                    android:background="@color/orange"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/delete"
+                    android:layout_margin="5dp"
+                    android:text="删除"
+                    android:textStyle="bold"
+                    android:background="@color/orange"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/add"

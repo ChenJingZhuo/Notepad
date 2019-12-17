@@ -16,4 +16,9 @@
         <item name="android:popupBackground">@color/colorPrimary</item> <!--更改背景颜色-->
     </style>
 
+    <style name="MyCheckBoox" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@android:color/darker_gray</item>
+        <item name="colorControlActivated">@android:color/holo_green_dark</item>
+    </style>
+
 </resources>
