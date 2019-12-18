@@ -133,13 +133,7 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 btnEditList();
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        CheckBox box=view.findViewById(R.id.checkbox_operate_data);
-                        box.setChecked(true);
-                    }
-                },100);
+                list.get(position).isCheck=true;
                 return true;
             }
         });
