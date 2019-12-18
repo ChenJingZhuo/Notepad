@@ -1,5 +1,6 @@
 package com.cjz.notepad;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -33,6 +36,8 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NotepadActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -127,33 +132,14 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                adapter.flag = !adapter.flag;
-                adapter.notifyDataSetChanged();
-                mToolsBar.setVisibility(View.VISIBLE);
-                mAdd.setVisibility(View.GONE);
-
-                /*AlertDialog dialog;
-                AlertDialog.Builder builder = new AlertDialog.Builder(NotepadActivity.this)
-                        .setMessage("是否删除此记录？")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                NotepadBean notepadBean = list.get(position);
-                                if (sqLiteHelper.deleteData(notepadBean.getId())) {
-                                    list.remove(position);
-                                    adapter.notifyDataSetChanged();
-                                    Toast.makeText(NotepadActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        })
-                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                dialog = builder.create();
-                dialog.show();*/
+                btnEditList();
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        CheckBox box=view.findViewById(R.id.checkbox_operate_data);
+                        box.setChecked(true);
+                    }
+                },100);
                 return true;
             }
         });
@@ -161,11 +147,16 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
 
     /**
      * 编辑、取消编辑
-     *
-     * @param view
      */
-    public void btnEditList(View view) {
+    public void btnEditList() {
         adapter.flag = !adapter.flag;
+        if (adapter.flag){
+            mToolsBar.setVisibility(View.VISIBLE);
+            mAdd.setVisibility(View.GONE);
+        }else {
+            mToolsBar.setVisibility(View.GONE);
+            mAdd.setVisibility(View.VISIBLE);
+        }
         adapter.notifyDataSetChanged();
     }
 
@@ -233,17 +224,35 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
                 }
             }
         }
-
-        for (NotepadBean nb : ids) {
-            if (sqLiteHelper.deleteData(nb.getId())) {
-                list.remove(nb.getId());
-            }
+        if (ids.size()>0){
+            AlertDialog dialog;
+            AlertDialog.Builder builder=new AlertDialog.Builder(this)
+                    .setMessage("是否删除选中的记录？")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            for (NotepadBean nb : ids) {
+                                if (sqLiteHelper.deleteData(nb.getId())) {
+                                    list.remove(nb.getId());
+                                }
+                            }
+                            Toast.makeText(NotepadActivity.this, "删除成功", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            btnEditList();
+                            showQueryData();
+                        }
+                    })
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            dialog=builder.show();
+        }else {
+            Toast.makeText(this, "您选择的记录为空", Toast.LENGTH_SHORT).show();
+            return;
         }
-        Toast.makeText(this, "删除成功", Toast.LENGTH_SHORT).show();
-        adapter.notifyDataSetChanged();
-        showQueryData();
-        mToolsBar.setVisibility(View.GONE);
-        mAdd.setVisibility(View.VISIBLE);
     }
 
     private void showQueryData() {
@@ -336,13 +345,17 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
         }
     };
 
+    /**
+     * 监听按下返回键的状态
+     * @param keyCode
+     * @param event
+     * @return
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-
             if (mToolsBar.getVisibility() == View.VISIBLE) {
-                mToolsBar.setVisibility(View.GONE);
-                mAdd.setVisibility(View.VISIBLE);
+                btnEditList();
             } else if ((System.currentTimeMillis() - exitTime) > 2000) {
                 Toast.makeText(this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
                 exitTime = System.currentTimeMillis();
@@ -366,8 +379,6 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.fresh:
-                // 在onCreate()中开启线程
-                new Thread(new GameThread()).start();
                 break;
             case R.id.search:
                 break;
@@ -422,53 +433,6 @@ public class NotepadActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.delete:
                 btnOperateList(v);
                 break;
-        }
-    }
-
-    // 实例化一个handler
-    Handler myHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case NotepadActivity.REFRERSH:
-                    mNotebook.invalidate(); // 刷新界面
-                    break;
-            }
-            super.handleMessage(msg);
-        }
-    };
-
-    class GameThread implements Runnable {
-        public void run() {
-            if (!Thread.currentThread().isInterrupted()) {
-                Message message = new Message();
-                message.what = NotepadActivity.REFRERSH;
-                // 发送消息
-                NotepadActivity.this.myHandler.sendMessage(message);
-            }
-
-            try {
-                Thread.sleep(100);
-            }catch (InterruptedException e){
-                Thread.currentThread().interrupt();
-            }
-
-        }
-    }
-
-    class ReFresh implements Runnable {
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-
-                mDrawerLayout.postInvalidate();
-
-            }
         }
     }
 
